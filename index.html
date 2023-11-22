@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pong</title>
+  </head>
+
+  <body>
+    <canvas id="canvas" width="720" height="480"></canvas>
+
+    <script>
+      // Leinwand
+      let canvas = document.getElementById("canvas"); // auf Leinwand zugreifen
+      let ctx = canvas.getContext("2d"); // in 2D auf Leinwand malen
+
+      // Maße
+      let p1 = { x: 10, y: 80 }; // Spieler1
+      let p2 = { x: 10, y: 80 }; // Spieler2
+      let ball = { x: 20, y: 20 }; // Ball
+
+      // Koordinaten
+      let p1Coords = {
+        x: 5,
+        y: canvas.height / 2 - p1.y / 2,
+      }; // Spieler1
+
+      let p2Coords = {
+        x: canvas.width - 5 - p2.x,
+        y: canvas.height / 2 - p2.y / 2,
+      }; // Spieler2
+
+      let ballCoords = (startBallCoords = {
+        x: canvas.width / 2 - ball.x / 2,
+        y: canvas.height / 2 - ball.y / 2,
+      }); // Ball Startkoordinaten
+
+      let ballSpeed = (startBallSpeed = { x: 3, y: 0 }); //
+
+      let key = {}; // Tasten
+
+      start();
+
+      document.addEventListener("keydown", (e) => (key[e.keyCode] = true)); // Taste wird gedrückt gehalten
+      document.addEventListener("keyup", (e) => (key[e.keyCode] = false)); // Taste wird wieder losgelassen
+
+      setInterval(gameLoop, 1000 / 60); // gameLoop wird 60 fps ausgeführt
+
+      draw();
+
+      // Elemente zeichnen
+      function draw() {
+        // Leinwand, Spielfeld zeichnen
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Spieler zeichnen
+        ctx.fillStyle = "white";
+        ctx.fillRect(p1Coords.x, p1Coords.y, p1.x, p1.y);
+        ctx.fillRect(p2Coords.x, p2Coords.y, p2.x, p2.y);
+
+        // Ball zeichnen
+        ctx.fillStyle = "yellow";
+        ctx.fillRect(ballCoords.x, ballCoords.y, ball.x, ball.y);
+
+        requestAnimationFrame(draw); // draw erneut ausführen
+      }
+
+      function gameLoop() {
+        // Spielschleife
+        checkGameOver();
+        movePlayer();
+        moveBall();
+        playBall();
+        ballUpDown();
+      }
+
+      function start() {
+        ballCoords = startBallCoords;
+        ballSpeed = startBallSpeed;
+      }
+
+      function checkGameOver() {
+        if (ballCoords.x < 0 || ballCoords.x > canvas.width - ball.x) {
+          setTimeout(start, 1000);
+        }
+      }
+
+      // Spieler bewegen
+      function movePlayer() {
+        // Spieler 1
+        if (key[87]) {
+          // hoch
+          p1Coords.y -= 5;
+        }
+        if (key[83]) {
+          // runter
+          p1Coords.y += 5;
+        }
+        // Spieler 2
+        if (key[38]) {
+          // hoch
+          p2Coords.y -= 5;
+        }
+        if (key[40]) {
+          // runter
+          p2Coords.y += 5;
+        }
+      }
+
+      // Ball bewegen
+      function moveBall() {
+        ballCoords.x += ballSpeed.x;
+        ballCoords.y += ballSpeed.y;
+      }
+
+      // Ball prallt unten und oben ab
+      function ballUpDown() {
+        if (ballCoords.y < 0 || ballCoords.y > canvas.height - ball.y) {
+          ballSpeed.y = -ballSpeed.y;
+        }
+      }
+      // Ball spielen
+      function playBall() {
+        // wenn Ball links auf Spieler1-Höhe ODER rechts auf Spieler2-Höhe ist
+        if (
+          ballCoords.x < p1Coords.x + p1.x ||
+          ballCoords.x > p2Coords.x - 15
+        ) {
+          // wenn Ball zwischen Spieler1s ...
+          if (
+            ballCoords.y > p1Coords.y && // ... oberen Rand und ...
+            ballCoords.y < p1Coords.y + 80 && // ... unteren Rand ist, und ...
+            ballSpeed.x < 0 // ... in Richtung Spieler1 fliegt (-x)
+          ) {
+            ballSpeed.x = -ballSpeed.x;
+            ballSpeed.y = (ballCoords.y - p1Coords.y - 40) * 0.1;
+          }
+
+          if (
+            ballCoords.y > p2Coords.y &&
+            ballCoords.y < p2Coords.y + 80 &&
+            ballSpeed.x > 0
+          ) {
+            ballSpeed.x = -ballSpeed.x;
+            ballSpeed.y = (ballCoords.y - p2Coords.y - 40) * 0.1;
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
